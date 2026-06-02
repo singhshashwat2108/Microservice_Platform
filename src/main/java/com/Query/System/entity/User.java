@@ -1,12 +1,16 @@
 package com.Query.System.entity;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class Auth {
+public class User {
 
   @Id
   @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -16,6 +20,10 @@ public class Auth {
   private String username;
   private String password;
 
+	@CreationTimestamp
+	private LocalDateTime joinDate;
+
+	
 	public String getUsername() {
 		return username;
 	}
