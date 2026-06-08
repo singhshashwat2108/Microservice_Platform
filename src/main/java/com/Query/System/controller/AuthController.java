@@ -6,6 +6,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.Query.System.dto.AuthDto;
+import com.Query.System.services.AuthService;
+
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -16,8 +21,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // ─── POST /auth/register ──────────────────────────────
-    // For new users — creates an account and returns a JWT
     @PostMapping("/register")
     public ResponseEntity<AuthDto.AuthResponse> register(
             @Valid @RequestBody AuthDto.RegisterRequest request) {
@@ -26,8 +29,7 @@ public class AuthController {
         return ResponseEntity.status(201).body(response);
     }
 
-    // ─── POST /auth/login ─────────────────────────────────
-    // For existing users — validates credentials and returns a JWT
+
     @PostMapping("/login")
     public ResponseEntity<AuthDto.AuthResponse> login(
             @Valid @RequestBody AuthDto.LoginRequest request) {

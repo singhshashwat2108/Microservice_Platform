@@ -2,7 +2,13 @@ package com.Query.System.services;
 
 import java.util.Collections;
 
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import com.Query.System.entity.User;
+import com.Query.System.repository.UserRepo;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -17,8 +23,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found: " + username));
-
-        // Returns a Spring Security User with no roles (role-based access not required here)
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

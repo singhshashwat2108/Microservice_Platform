@@ -12,6 +12,10 @@ import jakarta.persistence.Id;
 @Entity
 public class User {
 
+    public static Object builder() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
   @Id
   @GeneratedValue(strategy= GenerationType.IDENTITY)
   private String userid;

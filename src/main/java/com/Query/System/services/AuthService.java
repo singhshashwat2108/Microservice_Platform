@@ -1,18 +1,24 @@
 package com.Query.System.services;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.Query.System.dto.AuthDto;
+import com.Query.System.entity.User;
+import com.Query.System.repository.UserRepo;
 import com.Query.System.utility.JwtUtil;
 
 @Service
 public class AuthService {
 
-    private final UserRepository        userRepository;
-    private final PasswordEncoder       passwordEncoder;
+    private final UserRepo  userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final JwtUtil               jwtUtil;
     private final AuthenticationManager authenticationManager;
 
-    public AuthService(UserRepository userRepository,
+    public AuthService(UserRepo userRepository,
                        PasswordEncoder passwordEncoder,
                        JwtUtil jwtUtil,
                        AuthenticationManager authenticationManager) {
@@ -22,7 +28,7 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-    // ─── Register a new user ──────────────────────────────
+  
     public AuthDto.AuthResponse register(AuthDto.RegisterRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -41,10 +47,8 @@ public class AuthService {
                 "Account created successfully.");
     }
 
-    // ─── Login an existing user ───────────────────────────
     public AuthDto.AuthResponse login(AuthDto.LoginRequest request) {
-
-        // AuthenticationManager will throw if credentials are wrong
+ 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),

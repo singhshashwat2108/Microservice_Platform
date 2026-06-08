@@ -7,10 +7,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -21,7 +23,7 @@ public class Securityconfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService) {
+    public Securityconfig(JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService) {
         this.jwtAuthFilter      = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
     }
@@ -34,20 +36,17 @@ public class Securityconfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
 
-                // ── Fully public ──────────────────────────────────
                 .requestMatchers("/").permitAll()                        // homepage
                 .requestMatchers("/auth/login").permitAll()              // login
                 .requestMatchers("/auth/register").permitAll()           // register
 
-                // ── View queries (no login needed) ────────────────
+        
                 .requestMatchers(HttpMethod.GET, "/view").permitAll()
                 .requestMatchers(HttpMethod.GET, "/view/**").permitAll()
 
-                // ── Comment & like (no login needed) ──────────────
                 .requestMatchers(HttpMethod.POST, "/Query/*/comment").permitAll()
                 .requestMatchers(HttpMethod.POST, "/Query/*/like").permitAll()
 
-                // ── Everything else requires a valid JWT ──────────
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
