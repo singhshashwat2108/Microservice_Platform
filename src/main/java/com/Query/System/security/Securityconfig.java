@@ -55,12 +55,12 @@ public class Securityconfig {
         return http.build();
     }
 
+   // NEW (Spring Boot 3.x / Spring Security 6+) - pass UserDetailsService in constructor
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
+         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+         provider.setPasswordEncoder(passwordEncoder());
+         return provider;
     }
 
     @Bean
