@@ -14,10 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-@Configuration
-@EnableWebMvc
+@Configuration                   
 public class Securityconfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -36,17 +34,20 @@ public class Securityconfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
 
-                .requestMatchers("/").permitAll()                        // homepage
-                .requestMatchers("/auth/login").permitAll()              // login
-                .requestMatchers("/auth/register").permitAll()           // register
-
-        
+                
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/auth/login").permitAll()
+                .requestMatchers("/auth/register").permitAll()
+                 
                 .requestMatchers(HttpMethod.GET, "/view").permitAll()
                 .requestMatchers(HttpMethod.GET, "/view/**").permitAll()
-
+                .requestMatchers(HttpMethod.GET, "/category").permitAll()
+                .requestMatchers(HttpMethod.GET, "/category/**").permitAll()
+ 
                 .requestMatchers(HttpMethod.POST, "/Query/*/comment").permitAll()
                 .requestMatchers(HttpMethod.POST, "/Query/*/like").permitAll()
 
+    
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
@@ -55,12 +56,11 @@ public class Securityconfig {
         return http.build();
     }
 
- 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-         provider.setPasswordEncoder(passwordEncoder());
-         return provider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
