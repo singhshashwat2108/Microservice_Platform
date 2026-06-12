@@ -47,6 +47,13 @@ public class Securityconfig {
                 .requestMatchers(HttpMethod.GET, "/view/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/category").permitAll()
                 .requestMatchers(HttpMethod.GET, "/category/**").permitAll()
+                
+                .requestMatchers(HttpMethod.POST, "/Query/*/comment").permitAll()
+                .requestMatchers(HttpMethod.GET,  "/Query/*/comment").permitAll()
+
+                
+                .requestMatchers(HttpMethod.POST, "/Query/*/like").permitAll()
+                .requestMatchers(HttpMethod.GET,  "/Query/*/like").permitAll()
  
                 .requestMatchers(HttpMethod.POST, "/Query/*/comment").permitAll()
                 .requestMatchers(HttpMethod.POST, "/Query/*/like").permitAll()
