@@ -1,429 +1,322 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QueryBoard API</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <title>QueryBoard</title>
+  <link rel="stylesheet" href="shared.css"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0f0f0f;
-      --surface: #161616;
-      --border: #2a2a2a;
-      --accent: #e8ff47;
-      --text-primary: #f0f0f0;
-      --text-secondary: #888;
-      --text-muted: #555;
-      --green: #4fffb0;
-      --blue: #4fb8ff;
-      --red: #ff6b6b;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text-primary);
-      font-family: 'IBM Plex Sans', sans-serif;
-      font-weight: 300;
-      line-height: 1.6;
-      min-height: 100vh;
-    }
-
-    /* HEADER */
-    header {
-      border-bottom: 1px solid var(--border);
-      padding: 24px 48px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .logo {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-    }
-
-    .logo span {
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    .version-badge {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 2px 8px;
-      border-radius: 2px;
-    }
-
-    /* MAIN LAYOUT */
-    main {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 64px 48px 96px;
-    }
-
     .hero {
-      margin-bottom: 64px;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 80px 24px 48px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid rgba(99,102,241,0.15);
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .hero h1 {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 2.4rem;
+      font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 600;
-      line-height: 1.2;
-      color: var(--text-primary);
+      letter-spacing: -0.04em;
+      line-height: 1.15;
       margin-bottom: 16px;
+      color: var(--text);
     }
 
-    .hero h1 .highlight {
-      color: var(--accent);
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .hero p {
       font-size: 1rem;
-      color: var(--text-secondary);
-      max-width: 520px;
+      color: var(--text-2);
+      max-width: 480px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
     }
 
-    /* SECTION TITLES */
-    .section-label {
-      font-family: 'IBM Plex Mono', monospace;
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions .btn { padding: 11px 24px; width: auto; }
+
+    /* ─── Rules ─────────────────────────────────────────── */
+    .section {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px 64px;
+    }
+
+    .section-title {
       font-size: 0.7rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-      margin-bottom: 20px;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+      margin-bottom: 16px;
+    }
+
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .rule-card {
+      padding: 18px 20px;
       display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    section {
-      margin-bottom: 56px;
-    }
-
-    /* RULES LIST */
-    .rules-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .rules-list li {
-      display: flex;
+      gap: 14px;
       align-items: flex-start;
-      gap: 16px;
-      padding: 14px 18px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      transition: border-color 0.15s;
-    }
-
-    .rules-list li:hover {
-      border-color: #3a3a3a;
-      color: var(--text-primary);
     }
 
     .rule-num {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
       color: var(--accent);
-      background: rgba(232, 255, 71, 0.08);
-      padding: 2px 7px;
-      border-radius: 2px;
+      background: var(--accent-soft);
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
       margin-top: 1px;
     }
 
-    /* ENDPOINT CARDS */
-    .endpoints {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .rule-card p {
+      font-size: 0.85rem;
+      color: var(--text-2);
+      line-height: 1.55;
     }
 
-    .endpoint-card {
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-    }
+    /* ─── Endpoints table ───────────────────────────────── */
+    .endpoints { display: flex; flex-direction: column; gap: 2px; }
 
-    .endpoint-header {
+    .ep {
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 14px 18px;
-      background: var(--surface);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      transition: background 0.12s;
     }
+
+    .ep:hover { background: rgba(0,0,0,0.03); }
 
     .method {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.72rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.68rem;
       font-weight: 600;
       padding: 3px 8px;
-      border-radius: 2px;
+      border-radius: 5px;
+      width: 52px;
+      text-align: center;
       flex-shrink: 0;
     }
 
-    .method.get  { background: rgba(79,184,255,0.12); color: var(--blue); }
-    .method.post { background: rgba(79,255,176,0.12); color: var(--green); }
-    .method.put  { background: rgba(232,255,71,0.10); color: var(--accent); }
-    .method.delete { background: rgba(255,107,107,0.12); color: var(--red); }
+    .get    { background: rgba(34,197,94,0.10);  color: #15803d; }
+    .post   { background: rgba(99,102,241,0.10); color: var(--accent); }
+    .put    { background: rgba(245,158,11,0.10); color: #b45309; }
+    .delete { background: rgba(239,68,68,0.10);  color: #b91c1c; }
 
-    .endpoint-path {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-    }
-
-    .endpoint-desc {
+    .ep-path {
+      font-family: 'SF Mono', 'Fira Code', monospace;
       font-size: 0.82rem;
-      color: var(--text-muted);
+      color: var(--text);
+      min-width: 200px;
+    }
+
+    .ep-desc { font-size: 0.8rem; color: var(--text-3); }
+
+    .auth-pill {
       margin-left: auto;
-    }
-
-    .auth-tag {
-      font-family: 'IBM Plex Mono', monospace;
       font-size: 0.65rem;
-      padding: 2px 7px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-
-    .auth-tag.required { background: rgba(255,107,107,0.1); color: var(--red); border: 1px solid rgba(255,107,107,0.2); }
-    .auth-tag.open     { background: rgba(79,255,176,0.08); color: var(--green); border: 1px solid rgba(79,255,176,0.2); }
-
-    .endpoint-body {
-      border-top: 1px solid var(--border);
-      padding: 14px 18px;
-      background: #111;
-    }
-
-    .endpoint-body p {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      margin-bottom: 10px;
-    }
-
-    /* CODE BLOCK */
-    pre {
-      background: #0a0a0a;
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 14px 16px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
-      color: #c9d1d9;
-      overflow-x: auto;
-      line-height: 1.6;
-    }
-
-    .json-key   { color: var(--blue); }
-    .json-str   { color: var(--green); }
-    .json-punct { color: var(--text-muted); }
-
-    /* AUTH NOTE */
-    .auth-note {
-      display: flex;
-      gap: 14px;
-      padding: 16px 18px;
-      background: rgba(232, 255, 71, 0.04);
-      border: 1px solid rgba(232, 255, 71, 0.15);
-      border-radius: 4px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    .auth-note .icon {
-      font-size: 1rem;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .auth-note strong {
-      color: var(--accent);
       font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 99px;
+      flex-shrink: 0;
     }
 
-    /* FOOTER */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 24px 48px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .auth-pill.req  { background: rgba(239,68,68,0.08);  color: #b91c1c; border: 1px solid rgba(239,68,68,0.15); }
+    .auth-pill.open { background: rgba(34,197,94,0.08);  color: #15803d; border: 1px solid rgba(34,197,94,0.15); }
+
+    .ep-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+    /* ─── JSON example ──────────────────────────────────── */
+    .code-block {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-top: 12px;
     }
 
-    footer p {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.72rem;
-      color: var(--text-muted);
+    .code-block pre {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--text-2);
+      line-height: 1.7;
     }
 
-    .status-dot {
-      width: 7px; height: 7px;
-      background: var(--green);
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    @media (max-width: 600px) {
-      header, footer { padding: 20px 24px; }
-      main { padding: 40px 24px 64px; }
-      .hero h1 { font-size: 1.7rem; }
-      .endpoint-desc { display: none; }
-    }
+    .k { color: var(--accent); }
+    .s { color: #059669; }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo">QueryBoard<span>/api</span></div>
-    <span class="version-badge">v1.0</span>
-  </header>
+<nav>
+  <a class="nav-brand" href="index.html">Query<span>Board</span></a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="view.html">Queries</a>
+    <a href="login.html">Login</a>
+    <a href="register.html" class="btn-nav">Register</a>
+  </div>
+</nav>
 
-  <main>
+<div class="page">
 
-    <div class="hero">
-      <h1>A simple<br/><span class="highlight">query &amp; discussion</span><br/>REST API.</h1>
-      <p>Create topics, raise queries, comment, and engage — all through clean HTTP endpoints.</p>
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">✦ REST API</div>
+    <h1>A place to ask,<br/>answer &amp; <em>discuss</em></h1>
+    <p>Raise queries under topics, browse discussions, and engage with others — all through a clean REST API.</p>
+    <div class="hero-actions">
+      <a href="view.html" class="btn btn-primary">Browse Queries</a>
+      <a href="register.html" class="btn btn-ghost">Create Account</a>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div class="section">
+    <div class="section-title">Platform Rules</div>
+    <div class="rules-grid">
+      <div class="card rule-card">
+        <div class="rule-num">1</div>
+        <p>Users can create categories for queries — e.g. Entertainment, Food, Sports.</p>
+      </div>
+      <div class="card rule-card">
+        <div class="rule-num">2</div>
+        <p>Logged-in users can raise queries under any existing category.</p>
+      </div>
+      <div class="card rule-card">
+        <div class="rule-num">3</div>
+        <p>Anyone can view all queries under any topic — no login required.</p>
+      </div>
+      <div class="card rule-card">
+        <div class="rule-num">4</div>
+        <p>Anyone can comment and like queries without logging in.</p>
+      </div>
+      <div class="card rule-card">
+        <div class="rule-num">5</div>
+        <p>Only the owner of a query can edit or delete it.</p>
+      </div>
     </div>
 
-    <!-- RULES -->
-    <section>
-      <div class="section-label">Platform Rules</div>
-      <ul class="rules-list">
-        <li><span class="rule-num">01</span> Users can create categories for questions — e.g. Entertainment, Food, Sports, etc.</li>
-        <li><span class="rule-num">02</span> Users can raise queries under any existing category/topic.</li>
-        <li><span class="rule-num">03</span> Anyone can view all queries under any topic — no login required.</li>
-        <li><span class="rule-num">04</span> Users with system access can comment, reply, and like queries.</li>
-        <li><span class="rule-num">05</span> A query can only be edited or deleted by its original owner.</li>
-      </ul>
-    </section>
-
-    <!-- AUTH NOTE -->
-    <section>
-      <div class="section-label">Authentication</div>
-      <div class="auth-note">
-        <span class="icon">⚡</span>
-        <div>
-          <strong>Login is required</strong> to raise, edit, or delete queries.<br/>
-          <strong>No login needed</strong> to view queries (<code>/view</code>) or to like &amp; comment on them.
-        </div>
-      </div>
-    </section>
-
-    <!-- ENDPOINTS -->
-    <section>
-      <div class="section-label">Endpoints</div>
+    <!-- Endpoints -->
+    <div class="section-title">API Endpoints</div>
+    <div class="card" style="padding: 8px 4px; margin-bottom: 48px;">
       <div class="endpoints">
-
-        <div class="endpoint-card">
-          <div class="endpoint-header">
-            <span class="method get">GET</span>
-            <span class="endpoint-path">/view</span>
-            <span class="auth-tag open">public</span>
-            <span class="endpoint-desc">View all queries</span>
-          </div>
+        <div class="ep">
+          <span class="method get">GET</span>
+          <span class="ep-path">/view</span>
+          <span class="ep-desc">View all queries</span>
+          <span class="auth-pill open">public</span>
         </div>
-
-        <div class="endpoint-card">
-          <div class="endpoint-header">
-            <span class="method post">POST</span>
-            <span class="endpoint-path">/Query</span>
-            <span class="auth-tag required">auth required</span>
-            <span class="endpoint-desc">Raise a new query</span>
-          </div>
-          <div class="endpoint-body">
-            <p>Send a JSON body with the following fields:</p>
-            <pre><span class="json-punct">{</span>
-  <span class="json-key">"Topic"</span><span class="json-punct">:</span>  <span class="json-str">"Entertainment"</span><span class="json-punct">,</span>
-  <span class="json-key">"Query"</span><span class="json-punct">:</span>  <span class="json-str">"What are the best sci-fi movies of 2024?"</span>
-<span class="json-punct">}</span></pre>
-          </div>
+        <div class="ep">
+          <span class="method get">GET</span>
+          <span class="ep-path">/view?topic=...</span>
+          <span class="ep-desc">Filter by topic</span>
+          <span class="auth-pill open">public</span>
         </div>
-
-        <div class="endpoint-card">
-          <div class="endpoint-header">
-            <span class="method put">PUT</span>
-            <span class="endpoint-path">/Query/:id</span>
-            <span class="auth-tag required">auth required</span>
-            <span class="endpoint-desc">Edit your query (owner only)</span>
-          </div>
+        <div class="ep-divider"></div>
+        <div class="ep">
+          <span class="method post">POST</span>
+          <span class="ep-path">/auth/register</span>
+          <span class="ep-desc">Create an account</span>
+          <span class="auth-pill open">public</span>
         </div>
-
-        <div class="endpoint-card">
-          <div class="endpoint-header">
-            <span class="method delete">DELETE</span>
-            <span class="endpoint-path">/Query/:id</span>
-            <span class="auth-tag required">auth required</span>
-            <span class="endpoint-desc">Delete your query (owner only)</span>
-          </div>
+        <div class="ep">
+          <span class="method post">POST</span>
+          <span class="ep-path">/auth/login</span>
+          <span class="ep-desc">Login &amp; get JWT</span>
+          <span class="auth-pill open">public</span>
         </div>
-
-        <div class="endpoint-card">
-          <div class="endpoint-header">
-            <span class="method post">POST</span>
-            <span class="endpoint-path">/Query/:id/comment</span>
-            <span class="auth-tag open">public</span>
-            <span class="endpoint-desc">Comment on a query</span>
-          </div>
+        <div class="ep-divider"></div>
+        <div class="ep">
+          <span class="method post">POST</span>
+          <span class="ep-path">/category</span>
+          <span class="ep-desc">Create a category</span>
+          <span class="auth-pill req">auth required</span>
         </div>
-
-        <div class="endpoint-card">
-          <div class="endpoint-header">
-            <span class="method post">POST</span>
-            <span class="endpoint-path">/Query/:id/like</span>
-            <span class="auth-tag open">public</span>
-            <span class="endpoint-desc">Like a query</span>
-          </div>
+        <div class="ep">
+          <span class="method post">POST</span>
+          <span class="ep-path">/Query</span>
+          <span class="ep-desc">Raise a query</span>
+          <span class="auth-pill req">auth required</span>
         </div>
-
-        <div class="endpoint-card">
-          <div class="endpoint-header">
-            <span class="method post">POST</span>
-            <span class="endpoint-path">/category</span>
-            <span class="auth-tag required">auth required</span>
-            <span class="endpoint-desc">Create a new category</span>
-          </div>
+        <div class="ep">
+          <span class="method put">PUT</span>
+          <span class="ep-path">/Query/:id</span>
+          <span class="ep-desc">Edit your query</span>
+          <span class="auth-pill req">auth required</span>
         </div>
-
+        <div class="ep">
+          <span class="method delete">DELETE</span>
+          <span class="ep-path">/Query/:id</span>
+          <span class="ep-desc">Delete your query</span>
+          <span class="auth-pill req">auth required</span>
+        </div>
+        <div class="ep-divider"></div>
+        <div class="ep">
+          <span class="method post">POST</span>
+          <span class="ep-path">/Query/:id/comment</span>
+          <span class="ep-desc">Comment on a query</span>
+          <span class="auth-pill open">public</span>
+        </div>
+        <div class="ep">
+          <span class="method post">POST</span>
+          <span class="ep-path">/Query/:id/like</span>
+          <span class="ep-desc">Like a query</span>
+          <span class="auth-pill open">public</span>
+        </div>
       </div>
-    </section>
+    </div>
 
-  </main>
+    <!-- Query body example -->
+    <div class="section-title">Raising a Query — Request Body</div>
+    <div class="code-block">
+      <pre><span class="k">"Topic"</span> : <span class="s">"Entertainment"</span>,
+<span class="k">"Query"</span> : <span class="s">"What are the best sci-fi movies of 2024?"</span></pre>
+    </div>
+  </div>
 
-  <footer>
-    <p><span class="status-dot"></span>API is live</p>
-    <p>QueryBoard &copy; 2025</p>
-  </footer>
-
+</div>
 </body>
 </html>

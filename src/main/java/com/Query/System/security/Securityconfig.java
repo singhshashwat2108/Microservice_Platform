@@ -2,6 +2,7 @@ package com.Query.System.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -35,7 +36,10 @@ public class Securityconfig {
             .authorizeHttpRequests(auth -> auth
 
                 
-                .requestMatchers("/").permitAll()
+                .requestMatchers("/", "/index.html").permitAll()
+                .requestMatchers("/**.html").permitAll()        // allow all HTML pages
+                .requestMatchers("/**.css").permitAll()         // allow shared.css
+                .requestMatchers("/**.js").permitAll()          // allow any JS files
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers("/auth/register").permitAll()
                  
@@ -53,6 +57,16 @@ public class Securityconfig {
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
+        return http.build();
+    }
+
+    @Bean
+    @Order(1)
+    public SecurityFilterChain staticResources(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/**.html", "/**.css", "/**.js", "/favicon.ico")
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .csrf(csrf -> csrf.disable());
         return http.build();
     }
 

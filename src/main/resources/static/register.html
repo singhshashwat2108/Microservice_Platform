@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — QueryBoard</title>
+  <link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Query<span>Board</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="view.html">Queries</a>
+    <a href="login.html">Login</a>
+    <a href="register.html" class="btn-nav active">Register</a>
+  </div>
+</nav>
+
+<div class="page auth-layout">
+  <div class="card auth-card">
+
+    <h1>Create account</h1>
+    <p class="subtitle">Join QueryBoard to raise and manage queries.</p>
+
+    <div id="alert" class="alert"></div>
+
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="choose_a_username" autocomplete="username"/>
+        <span style="font-size:0.72rem; color:var(--text-3);">3–50 characters.</span>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="new-password"/>
+        <span style="font-size:0.72rem; color:var(--text-3);">Minimum 6 characters.</span>
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input id="confirmPassword" type="password" placeholder="••••••••" autocomplete="new-password"/>
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        Create Account
+      </button>
+    </form>
+
+    <div class="divider" style="margin-top:20px;">or</div>
+
+    <p class="auth-footer" style="margin-top:16px;">
+      Already have an account? <a href="login.html">Login</a>
+    </p>
+
+  </div>
+</div>
+
+<script>
+  const form      = document.getElementById('registerForm');
+  const alertBox  = document.getElementById('alert');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function showAlert(msg, type) {
+    alertBox.textContent = msg;
+    alertBox.className   = `alert ${type} show`;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertBox.className = 'alert';
+
+    const username        = document.getElementById('username').value.trim();
+    const password        = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!username || !password || !confirmPassword) {
+      return showAlert('Please fill in all fields.', 'error');
+    }
+    if (username.length < 3) {
+      return showAlert('Username must be at least 3 characters.', 'error');
+    }
+    if (password.length < 6) {
+      return showAlert('Password must be at least 6 characters.', 'error');
+    }
+    if (password !== confirmPassword) {
+      return showAlert('Passwords do not match.', 'error');
+    }
+
+    submitBtn.textContent = 'Creating account…';
+    submitBtn.disabled = true;
+
+    try {
+      const res  = await fetch('/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showAlert(data.message || 'Registration failed.', 'error');
+        submitBtn.textContent = 'Create Account';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      sessionStorage.setItem('token',    data.token);
+      sessionStorage.setItem('username', data.username);
+
+      showAlert('Account created! Redirecting…', 'success');
+      setTimeout(() => window.location.href = 'view.html', 800);
+
+    } catch (err) {
+      showAlert('Could not reach the server.', 'error');
+      submitBtn.textContent = 'Create Account';
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

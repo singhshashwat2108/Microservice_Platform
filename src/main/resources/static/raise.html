@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Raise Query — QueryBoard</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .page-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+
+    .page-sub {
+      font-size: 0.82rem;
+      color: var(--text-3);
+      margin-bottom: 32px;
+    }
+
+    .raise-card { padding: 28px 28px; }
+    .raise-card form { display: flex; flex-direction: column; gap: 18px; }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .form-row .form-group { flex: 1; }
+
+    .form-row .btn {
+      width: auto;
+      padding: 10px 14px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .new-cat-row {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .new-cat-row.visible { display: flex; }
+
+    textarea { min-height: 120px; }
+
+    .form-actions { display: flex; gap: 10px; }
+    .form-actions .btn { flex: 1; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Query<span>Board</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="view.html">Queries</a>
+    <span id="navAuth"></span>
+  </div>
+</nav>
+
+<div class="page page-inner">
+
+  <h1 class="page-title">Raise a Query</h1>
+  <p class="page-sub">Pick a topic and write your query. Topic must exist first.</p>
+
+  <div id="alert" class="alert" style="margin-bottom:16px;"></div>
+
+  <div class="card raise-card">
+    <form id="raiseForm">
+
+      <!-- Topic picker -->
+      <div class="form-group">
+        <label>Topic / Category</label>
+        <div class="form-row" style="margin-top:0;">
+          <div class="form-group" style="margin:0;">
+            <select id="topicSelect">
+              <option value="">Loading topics…</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-ghost" onclick="toggleNewCat()">+ New</button>
+        </div>
+      </div>
+
+      <!-- Create new category inline -->
+      <div class="new-cat-row" id="newCatRow">
+        <label>New Category Name</label>
+        <div class="form-row" style="margin-top:0;">
+          <div class="form-group" style="margin:0;">
+            <input id="newCatInput" type="text" placeholder="e.g. Technology"/>
+          </div>
+          <button type="button" class="btn btn-accent" onclick="createCategory()">Create</button>
+        </div>
+      </div>
+
+      <!-- Query text -->
+      <div class="form-group">
+        <label for="queryText">Your Query</label>
+        <textarea id="queryText" placeholder="Write your question or discussion topic here…"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <a href="view.html" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Post Query</button>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+<script>
+  const token    = sessionStorage.getItem('token');
+  const username = sessionStorage.getItem('username');
+
+  // ─── Redirect if not logged in ────────────────────────
+  if (!token) {
+    window.location.href = 'login.html';
+  }
+
+  // ─── Nav ──────────────────────────────────────────────
+  document.getElementById('navAuth').innerHTML = `
+    <span style="font-size:0.78rem;color:var(--text-3);padding:0 8px;">@${username}</span>
+    <a href="#" onclick="logout()" style="font-size:0.82rem;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:8px;text-decoration:none;">Logout</a>`;
+
+  function logout() { sessionStorage.clear(); window.location.href = 'login.html'; }
+
+  const alertBox = document.getElementById('alert');
+  function showAlert(msg, type) {
+    alertBox.textContent = msg;
+    alertBox.className   = `alert ${type} show`;
+    alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ─── Load categories ──────────────────────────────────
+  async function loadCategories(selectValue) {
+    const sel = document.getElementById('topicSelect');
+    try {
+      const res  = await fetch('/category');
+      const data = await res.json();
+      sel.innerHTML = data.length
+        ? '<option value="">Select a topic…</option>'
+        : '<option value="">No topics yet — create one</option>';
+      data.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = c.name;
+        if (c.name === selectValue) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    } catch (_) {
+      sel.innerHTML = '<option value="">Could not load topics</option>';
+    }
+  }
+
+  // ─── Toggle new category input ────────────────────────
+  function toggleNewCat() {
+    const row = document.getElementById('newCatRow');
+    row.classList.toggle('visible');
+    if (row.classList.contains('visible')) {
+      document.getElementById('newCatInput').focus();
+    }
+  }
+
+  // ─── Create category ──────────────────────────────────
+  async function createCategory() {
+    const name = document.getElementById('newCatInput').value.trim();
+    if (!name) return showAlert('Enter a category name.', 'error');
+
+    try {
+      const res  = await fetch('/category', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+
+      if (!res.ok) return showAlert(data.message || 'Failed to create category.', 'error');
+
+      showAlert(`Category "${name}" created!`, 'success');
+      document.getElementById('newCatInput').value = '';
+      document.getElementById('newCatRow').classList.remove('visible');
+      await loadCategories(name);   // reload and auto-select new one
+
+    } catch (_) {
+      showAlert('Could not reach the server.', 'error');
+    }
+  }
+
+  // ─── Submit query ─────────────────────────────────────
+  const form      = document.getElementById('raiseForm');
+  const submitBtn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertBox.className = 'alert';
+
+    const topic = document.getElementById('topicSelect').value;
+    const query = document.getElementById('queryText').value.trim();
+
+    if (!topic) return showAlert('Please select a topic.', 'error');
+    if (!query) return showAlert('Please write your query.', 'error');
+
+    submitBtn.textContent = 'Posting…';
+    submitBtn.disabled = true;
+
+    try {
+      const res  = await fetch('/Query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ Topic: topic, Query: query })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showAlert(data.message || 'Failed to post query.', 'error');
+        submitBtn.textContent = 'Post Query';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      showAlert('Query posted! Redirecting…', 'success');
+      setTimeout(() => window.location.href = 'view.html', 800);
+
+    } catch (_) {
+      showAlert('Could not reach the server.', 'error');
+      submitBtn.textContent = 'Post Query';
+      submitBtn.disabled = false;
+    }
+  });
+
+  loadCategories();
+</script>
+</body>
+</html>
