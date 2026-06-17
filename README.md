@@ -185,3 +185,5 @@ are validated using Spring Security filters before accessing protected endpoints
 * user_id
 
 ---
+
+<img width="1392" height="1052" alt="Queryboard_diagram" src="https://github.com/user-attachments/assets/7489dc5e-5aeb-4e4e-a58c-8e5d0b229fd3" />
