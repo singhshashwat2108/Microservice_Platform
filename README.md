@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # QueryHub — Microservices (Phase 1)
 
 QueryHub is a query management platform migrated from a monolith into a microservice architecture.
@@ -125,3 +126,6 @@ Services:
 - Spring Data JPA + MySQL
 - Maven multi-module
 - Docker Compose
+=======
+# Microservice_Platform
+>>>>>>> 6a461dc4e4936b5b3d6996efefefc5ad04fda655
