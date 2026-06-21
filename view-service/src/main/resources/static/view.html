@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Queries — QueryHub</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <script src="config.js"></script>
+  <style>
+    .page-inner { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.03em; }
+    .page-header p { font-size: 0.82rem; color: var(--text-3); margin-top: 2px; }
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .filter-bar select { width: auto; min-width: 180px; padding: 8px 12px; }
+    .filter-bar .btn { padding: 8px 16px; width: auto; }
+    .queries-list { display: flex; flex-direction: column; gap: 12px; }
+    .query-card { padding: 20px 22px; transition: box-shadow 0.15s; }
+    .query-card:hover { box-shadow: var(--shadow-lg); }
+    .query-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .topic-badge { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); background: var(--accent-soft); padding: 3px 8px; border-radius: 99px; }
+    .query-owner { font-size: 0.75rem; color: var(--text-3); }
+    .query-date { font-size: 0.72rem; color: var(--text-3); margin-left: auto; }
+    .query-text { font-size: 0.92rem; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
+    .query-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+    .state-box { text-align: center; padding: 64px 24px; color: var(--text-3); }
+    .state-box .icon { font-size: 2rem; margin-bottom: 12px; }
+    .state-box p { font-size: 0.85rem; }
+    .state-box a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Query<span>Hub</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="view.html" class="active">Queries</a>
+    <span id="navAuth"></span>
+  </div>
+</nav>
+
+<div class="page page-inner">
+  <div class="page-header">
+    <div>
+      <h1>All Queries</h1>
+      <p id="queryCount">Loading…</p>
+    </div>
+    <a href="raise.html" class="btn btn-accent" id="raiseBtn" style="display:none; width:auto;">+ Raise Query</a>
+  </div>
+
+  <div class="filter-bar">
+    <select id="topicFilter">
+      <option value="">All Topics</option>
+    </select>
+    <button class="btn btn-ghost" onclick="loadQueries()">Filter</button>
+  </div>
+
+  <div id="queriesList" class="queries-list">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <p>Loading queries…</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = getToken();
+  const username = getUsername();
+
+  const navAuth = document.getElementById('navAuth');
+  if (token && username) {
+    navAuth.innerHTML = `
+      <span style="font-size:0.78rem; color:var(--text-3); padding:0 8px;">@${username}</span>
+      <a href="#" onclick="logout()" style="font-size:0.82rem;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:8px;text-decoration:none;">Logout</a>`;
+    document.getElementById('raiseBtn').style.display = 'inline-flex';
+  } else {
+    navAuth.innerHTML = `
+      <a href="login.html">Login</a>
+      <a href="register.html" class="btn-nav">Register</a>`;
+  }
+
+  function logout() {
+    sessionStorage.clear();
+    window.location.reload();
+  }
+
+  async function loadCategories() {
+    try {
+      const res = await fetch(`${API.QUERY}/category`);
+      const data = await res.json();
+      const sel = document.getElementById('topicFilter');
+      data.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = c.name;
+        sel.appendChild(opt);
+      });
+    } catch (_) {}
+  }
+
+  async function loadQueries() {
+    const list = document.getElementById('queriesList');
+    const topic = document.getElementById('topicFilter').value;
+    let url = `${API.VIEW}/view/all?page=0&size=20`;
+    if (topic) url += `&category=${encodeURIComponent(topic)}`;
+
+    list.innerHTML = `<div class="state-box"><div class="spinner"></div><p>Loading…</p></div>`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      const queries = data.content || [];
+
+      document.getElementById('queryCount').textContent =
+        `${data.totalElements ?? queries.length} quer${(data.totalElements ?? queries.length) === 1 ? 'y' : 'ies'}`;
+
+      if (!queries.length) {
+        list.innerHTML = `<div class="state-box">
+          <div class="icon">💬</div>
+          <p>No queries yet. <a href="raise.html">Be the first to raise one.</a></p>
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = queries.map(q => `
+        <div class="card query-card">
+          <div class="query-meta">
+            <span class="topic-badge">${escHtml(q.topic)}</span>
+            <span class="query-owner">by @${escHtml(q.owner)}</span>
+            <span class="query-date">${formatDate(q.createdAt)}</span>
+          </div>
+          ${q.title ? `<div class="query-title">${escHtml(q.title)}</div>` : ''}
+          <p class="query-text">${escHtml(q.description || q.queryText || '')}</p>
+        </div>
+      `).join('');
+    } catch (_) {
+      list.innerHTML = `<div class="state-box">
+        <div class="icon">⚠️</div>
+        <p>Could not load queries. Make sure all services are running.</p>
+      </div>`;
+    }
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  loadCategories();
+  loadQueries();
+</script>
+</body>
+</html>

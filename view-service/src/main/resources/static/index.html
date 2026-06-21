@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QueryHub</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .hero { max-width: 720px; margin: 0 auto; padding: 80px 24px 48px; text-align: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 500; color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(99,102,241,0.15); padding: 4px 12px; border-radius: 99px; margin-bottom: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; letter-spacing: -0.04em; line-height: 1.15; margin-bottom: 16px; color: var(--text); }
+    .hero h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent), #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { font-size: 1rem; color: var(--text-2); max-width: 520px; margin: 0 auto 32px; line-height: 1.7; }
+    .hero-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .hero-actions .btn { padding: 11px 24px; width: auto; }
+    .section { max-width: 760px; margin: 0 auto; padding: 0 24px 64px; }
+    .section-title { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 16px; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 48px; }
+    .service-card { padding: 18px 20px; }
+    .service-card h3 { font-size: 0.9rem; margin-bottom: 6px; }
+    .service-card p { font-size: 0.8rem; color: var(--text-2); line-height: 1.5; }
+    .service-port { font-family: monospace; font-size: 0.72rem; color: var(--accent); margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Query<span>Hub</span></a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="view.html">Queries</a>
+    <a href="login.html">Login</a>
+    <a href="register.html" class="btn-nav">Register</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="hero">
+    <div class="hero-badge">Phase 1 · Microservices</div>
+    <h1>A place to ask,<br/>answer &amp; <em>discuss</em></h1>
+    <p>QueryHub runs as independent Spring Boot services — Auth, Query, and View — each with its own database.</p>
+    <div class="hero-actions">
+      <a href="view.html" class="btn btn-primary">Browse Queries</a>
+      <a href="register.html" class="btn btn-ghost">Create Account</a>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Microservices (Phase 1)</div>
+    <div class="services-grid">
+      <div class="card service-card">
+        <h3>Auth Service</h3>
+        <p>Registration, login, JWT generation and profile.</p>
+        <div class="service-port">:8081</div>
+      </div>
+      <div class="card service-card">
+        <h3>Query Service</h3>
+        <p>Queries, categories, ownership rules and business logic.</p>
+        <div class="service-port">:8082</div>
+      </div>
+      <div class="card service-card">
+        <h3>View Service</h3>
+        <p>Read-only query views and this web frontend.</p>
+        <div class="service-port">:8083</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

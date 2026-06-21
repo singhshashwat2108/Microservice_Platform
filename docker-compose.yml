@@ -1,0 +1,77 @@
+services:
+  auth-db:
+    image: mysql:8.4
+    container_name: queryhub-auth-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth_db
+    volumes:
+      - auth_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  query-db:
+    image: mysql:8.4
+    container_name: queryhub-query-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: query_db
+    volumes:
+      - query_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: queryhub-auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://auth-db:3306/auth_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      JWT_SECRET: QueryHubSuperSecretKeyForJWTTokenGeneration2024Phase1
+    depends_on:
+      auth-db:
+        condition: service_healthy
+
+  query-service:
+    build:
+      context: .
+      dockerfile: query-service/Dockerfile
+    container_name: queryhub-query-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://query-db:3306/query_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      JWT_SECRET: QueryHubSuperSecretKeyForJWTTokenGeneration2024Phase1
+    depends_on:
+      query-db:
+        condition: service_healthy
+
+  view-service:
+    build:
+      context: .
+      dockerfile: view-service/Dockerfile
+    container_name: queryhub-view-service
+    ports:
+      - "8083:8083"
+    environment:
+      QUERY_SERVICE_URL: http://query-service:8082
+      JJWT_SECRET: QueryHubSuperSecretKeyForJWTTokenGeneration2024Phase1
+    depends_on:
+      - query-service
+
+volumes:
+  auth_db_data:
+  query_db_data:

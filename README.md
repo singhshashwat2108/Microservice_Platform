@@ -1,189 +1,127 @@
-# Query Management System
+# QueryHub — Microservices (Phase 1)
 
-A full-stack Query Management Platform built using Spring Boot, Spring Security, JWT Authentication, MySQL, JPA/Hibernate, and Thymeleaf.
+QueryHub is a query management platform migrated from a monolith into a microservice architecture.
 
-The application allows users to register, authenticate, create and manage queries, categorize content, interact through comments and likes, and browse queries through a web interface.
+## Architecture (Phase 1)
 
----
+```text
+Client (HTML/JS on View Service :8083)
+        |
+        +-- Auth Service (:8081) --> auth_db (MySQL)
+        +-- Query Service (:8082) --> query_db (MySQL)
+        +-- View Service (:8083) --> Query Service (read-only, no DB)
+```
 
-## Features
+### Services
 
-### Authentication & Authorization
+| Service | Port | Database | Responsibility |
+|---------|------|----------|----------------|
+| **auth-service** | 8081 | `auth_db` | Registration, login, JWT, profile |
+| **query-service** | 8082 | `query_db` | Queries, categories, ownership rules |
+| **view-service** | 8083 | None | Read-only views + static frontend |
 
-* User Registration
-* User Login
-* JWT-based Authentication
-* Password Encryption using BCrypt
-* Protected API Endpoints
-* Stateless Security Configuration
+## Project Structure
 
-### Query Management
+```text
+QueryBoard_SpringBoot/
+├── common-lib/          Shared JWT, CORS, error handling
+├── auth-service/
+├── query-service/
+├── view-service/
+├── docker-compose.yml
+└── pom.xml              Maven parent (multi-module)
+```
 
-* Create Query
-* Update Query
-* Delete Query (Owner Only)
-* View Queries
-* Filter Queries by Category
+## API Endpoints
 
-### Category Management
+### Auth Service (`:8081`)
 
-* Create Categories
-* Organize Queries by Category
+| Method | Path | Auth |
+|--------|------|------|
+| POST | `/auth/register` | Public |
+| POST | `/auth/login` | Public |
+| GET | `/auth/profile` | JWT |
+| POST | `/auth/validate` | Public |
 
-### Comments & Likes
+### Query Service (`:8082`)
 
-* Add Comments to Queries
-* Guest Comments with Optional Name
-* Like Queries
+| Method | Path | Auth |
+|--------|------|------|
+| POST | `/query` | JWT |
+| GET | `/query/{id}` | Public |
+| GET | `/query/all` | Public |
+| GET | `/query/latest` | Public |
+| PUT | `/query/{id}` | Owner |
+| DELETE | `/query/{id}` | Owner |
+| POST | `/category` | JWT |
+| GET | `/category` | Public |
 
-### Frontend
+### View Service (`:8083`)
 
-* Homepage
-* Login Page
-* Registration Page
-* Query Listing Page
-* Query Creation Form
-* Category-based Filtering
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/view/query/{id}` | Public |
+| GET | `/view/all` | Public |
+| GET | `/view/latest` | Public |
 
----
+Static frontend: `http://localhost:8083/index.html`
+
+## Run Locally (without Docker)
+
+### Prerequisites
+
+- Java 17
+- Maven 3.9+
+- MySQL 8 with databases `auth_db` and `query_db`
+
+```sql
+CREATE DATABASE auth_db;
+CREATE DATABASE query_db;
+```
+
+Update credentials in each service's `application.properties` if needed.
+
+### Build
+
+```bash
+mvn clean package
+```
+
+### Start services (three terminals)
+
+```bash
+java -jar auth-service/target/auth-service-0.0.1-SNAPSHOT.jar
+java -jar query-service/target/query-service-0.0.1-SNAPSHOT.jar
+java -jar view-service/target/view-service-0.0.1-SNAPSHOT.jar
+```
+
+Open **http://localhost:8083**
+
+## Run with Docker
+
+```bash
+docker compose up --build
+```
+
+Services:
+
+- Frontend: http://localhost:8083
+- Auth API: http://localhost:8081
+- Query API: http://localhost:8082
+
+## Phase Roadmap
+
+| Phase | Features |
+|-------|----------|
+| **1 (current)** | Auth, Query, View services, separate DBs, Docker |
+| 2 | API Gateway, Comments, Likes |
+| 3 | Redis cache-aside, TTL, invalidation |
+| 4 | Kafka, Notification Service |
 
 ## Tech Stack
 
-### Backend
-
-* Java 17
-* Spring Boot
-* Spring Security
-* Spring Data JPA
-* Hibernate
-* JWT Authentication
-
-### Database
-
-* MySQL
-
-### Frontend
-
-* Thymeleaf
-* HTML
-* CSS
-* JavaScript
-
-### Build Tool
-
-* Maven
-
----
-
-## Project Architecture
-
-The application follows a layered monolithic architecture.
-
-```text
-Controller Layer
-        │
-        ▼
-Service Layer
-        │
-        ▼
-Repository Layer
-        │
-        ▼
-MySQL Database
-```
-
-### Main Components
-
-```text
-Controllers
-├── AuthController
-├── QueryController
-├── CategoryController
-├── CommentController
-
-Services
-├── AuthService
-├── QueryService
-├── CategoryService
-├── CommentService
-
-Repositories
-├── UserRepository
-├── QueryRepository
-├── CategoryRepository
-├── CommentRepository
-```
-
----
-
-## Security Flow
-
-```text
-User Login
-     │
-     ▼
-AuthenticationManager
-     │
-     ▼
-UserDetailsService
-     │
-     ▼
-Database Validation
-     │
-     ▼
-JWT Generation
-     │
-     ▼
-JWT Returned To Client
-```
-
-Subsequent requests:
-
-```text
-Authorization: Bearer <JWT_TOKEN>
-```
-
-are validated using Spring Security filters before accessing protected endpoints.
-
----
-
-## Database Design
-
-### Users
-
-* id
-* username
-* password
-* role
-
-### Categories
-
-* id
-* name
-
-### Queries
-
-* id
-* title
-* description
-* category_id
-* user_id
-* created_at
-
-### Comments
-
-* id
-* query_id
-* guest_name
-* content
-* created_at
-
-### Likes
-
-* id
-* query_id
-* user_id
-
----
-
-<img width="1392" height="1052" alt="Queryboard_diagram" src="https://github.com/user-attachments/assets/7489dc5e-5aeb-4e4e-a58c-8e5d0b229fd3" />
+- Java 17, Spring Boot 3.4
+- Spring Security + JWT
+- Spring Data JPA + MySQL
+- Maven multi-module
+- Docker Compose

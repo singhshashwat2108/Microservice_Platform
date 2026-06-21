@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — QueryHub</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <script src="config.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Query<span>Hub</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="view.html">Queries</a>
+    <a href="login.html" class="active">Login</a>
+    <a href="register.html" class="btn-nav">Register</a>
+  </div>
+</nav>
+
+<div class="page auth-layout">
+  <div class="card auth-card">
+    <h1>Welcome back</h1>
+    <p class="subtitle">Login to raise and manage queries.</p>
+    <div id="alert" class="alert"></div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="your_username" autocomplete="username"/>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">Login</button>
+    </form>
+    <div class="divider" style="margin-top:20px;">or</div>
+    <p class="auth-footer" style="margin-top:16px;">
+      Don't have an account? <a href="register.html">Register</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const alertBox = document.getElementById('alert');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function showAlert(msg, type) {
+    alertBox.textContent = msg;
+    alertBox.className = `alert ${type} show`;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertBox.className = 'alert';
+    submitBtn.textContent = 'Logging in…';
+    submitBtn.disabled = true;
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!username || !password) {
+      showAlert('Please fill in all fields.', 'error');
+      submitBtn.textContent = 'Login';
+      submitBtn.disabled = false;
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API.AUTH}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!res.ok) {
+        showAlert(await parseError(res), 'error');
+        submitBtn.textContent = 'Login';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      const data = await res.json();
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('username', data.username);
+      sessionStorage.setItem('userId', String(data.userId));
+
+      showAlert('Login successful! Redirecting…', 'success');
+      setTimeout(() => window.location.href = 'view.html', 800);
+    } catch (_) {
+      showAlert('Could not reach the auth service.', 'error');
+      submitBtn.textContent = 'Login';
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
