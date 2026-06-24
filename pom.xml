@@ -23,6 +23,7 @@
         <module>auth-service</module>
         <module>query-service</module>
         <module>view-service</module>
+        <module>gateway-service</module>
     </modules>
 
     <properties>
