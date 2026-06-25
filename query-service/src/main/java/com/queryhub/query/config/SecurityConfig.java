@@ -28,10 +28,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/query/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/category/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/comments/query/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/likes/*/count").permitAll()
                         .requestMatchers(HttpMethod.POST, "/category").authenticated()
                         .requestMatchers(HttpMethod.POST, "/query").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/query/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/query/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/comments").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/likes/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/likes/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);

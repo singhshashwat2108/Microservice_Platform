@@ -24,6 +24,10 @@ class QueryServiceTest {
     private QueryRepository queryRepository;
     @Mock
     private CategoryService categoryService;
+    @Mock
+    private com.queryhub.query.repository.CommentRepository commentRepository;
+    @Mock
+    private com.queryhub.query.repository.LikeRepository likeRepository;
 
     @InjectMocks
     private QueryService queryService;

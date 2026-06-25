@@ -49,6 +49,8 @@ public class QueryDto {
         private String owner;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private List<CommentDto.CommentResponse> comments;
+        private long likeCount;
 
         public QueryResponse(Long id, String title, String description, String topic,
                              Long authorId, String owner,
@@ -61,6 +63,15 @@ public class QueryDto {
             this.owner = owner;
             this.createdAt = createdAt;
             this.updatedAt = updatedAt;
+        }
+
+        public QueryResponse(Long id, String title, String description, String topic,
+                             Long authorId, String owner,
+                             LocalDateTime createdAt, LocalDateTime updatedAt,
+                             List<CommentDto.CommentResponse> comments, long likeCount) {
+            this(id, title, description, topic, authorId, owner, createdAt, updatedAt);
+            this.comments = comments;
+            this.likeCount = likeCount;
         }
     }
 

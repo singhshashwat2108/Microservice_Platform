@@ -1,9 +1,12 @@
 package com.queryhub.query.service;
 
 import com.queryhub.common.handler.ResourceNotFoundException;
+import com.queryhub.query.dto.CommentDto;
 import com.queryhub.query.dto.QueryDto;
 import com.queryhub.query.entity.Category;
 import com.queryhub.query.entity.QueryEntity;
+import com.queryhub.query.repository.CommentRepository;
+import com.queryhub.query.repository.LikeRepository;
 import com.queryhub.query.repository.QueryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,10 +29,15 @@ public class QueryService {
 
     private final QueryRepository queryRepository;
     private final CategoryService categoryService;
+    private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
 
-    public QueryService(QueryRepository queryRepository, CategoryService categoryService) {
+    public QueryService(QueryRepository queryRepository, CategoryService categoryService,
+                        CommentRepository commentRepository, LikeRepository likeRepository) {
         this.queryRepository = queryRepository;
         this.categoryService = categoryService;
+        this.commentRepository = commentRepository;
+        this.likeRepository = likeRepository;
     }
 
     public QueryDto.QueryResponse createQuery(QueryDto.QueryRequest request, Long authorId, String authorName) {
@@ -72,9 +81,12 @@ public class QueryService {
         return toResponse(query);
     }
 
+    @Transactional
     public void deleteQuery(Long id, Long authorId, String role) {
         QueryEntity query = findQueryOrThrow(id);
         checkOwnership(query, authorId, role);
+        commentRepository.deleteByQueryId(id);
+        likeRepository.deleteByQueryId(id);
         queryRepository.delete(query);
         log.info("Query deleted: id={}", id);
     }
@@ -141,6 +153,17 @@ public class QueryService {
     }
 
     private QueryDto.QueryResponse toResponse(QueryEntity query) {
+        List<CommentDto.CommentResponse> comments = commentRepository.findByQueryId(query.getId()).stream()
+                .map(c -> CommentDto.CommentResponse.builder()
+                        .id(c.getId())
+                        .content(c.getContent())
+                        .createdAt(c.getCreatedAt())
+                        .queryId(c.getQueryId())
+                        .userId(c.getUserId())
+                        .userName(c.getUserName())
+                        .build())
+                .collect(Collectors.toList());
+
         return new QueryDto.QueryResponse(
                 query.getId(),
                 query.getTitle(),
@@ -149,7 +172,9 @@ public class QueryService {
                 query.getAuthorId(),
                 query.getAuthorName(),
                 query.getCreatedAt(),
-                query.getUpdatedAt()
+                query.getUpdatedAt(),
+                comments,
+                likeRepository.countByQueryId(query.getId())
         );
     }
 }
