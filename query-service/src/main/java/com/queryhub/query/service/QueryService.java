@@ -31,13 +31,16 @@ public class QueryService {
     private final CategoryService categoryService;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
+    private final CacheInvalidationService cacheInvalidationService;
 
     public QueryService(QueryRepository queryRepository, CategoryService categoryService,
-                        CommentRepository commentRepository, LikeRepository likeRepository) {
+                        CommentRepository commentRepository, LikeRepository likeRepository,
+                        CacheInvalidationService cacheInvalidationService) {
         this.queryRepository = queryRepository;
         this.categoryService = categoryService;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
+        this.cacheInvalidationService = cacheInvalidationService;
     }
 
     public QueryDto.QueryResponse createQuery(QueryDto.QueryRequest request, Long authorId, String authorName) {
@@ -55,6 +58,7 @@ public class QueryService {
 
         queryRepository.save(query);
         log.info("Query created: id={}, authorId={}", query.getId(), authorId);
+        cacheInvalidationService.invalidate(query.getId(), query.getCategory().getName());
         return toResponse(query);
     }
 
@@ -78,6 +82,7 @@ public class QueryService {
 
         queryRepository.save(query);
         log.info("Query updated: id={}", id);
+        cacheInvalidationService.invalidate(id, query.getCategory().getName());
         return toResponse(query);
     }
 
@@ -85,10 +90,12 @@ public class QueryService {
     public void deleteQuery(Long id, Long authorId, String role) {
         QueryEntity query = findQueryOrThrow(id);
         checkOwnership(query, authorId, role);
+        String categoryName = query.getCategory().getName();
         commentRepository.deleteByQueryId(id);
         likeRepository.deleteByQueryId(id);
         queryRepository.delete(query);
         log.info("Query deleted: id={}", id);
+        cacheInvalidationService.invalidate(id, categoryName);
     }
 
     public QueryDto.QueryResponse getQueryById(Long id) {

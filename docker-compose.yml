@@ -55,8 +55,12 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       JWT_SECRET: QueryHubSuperSecretKeyForJWTTokenGeneration2024Phase1
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
     depends_on:
       query-db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   view-service:
@@ -69,8 +73,22 @@ services:
     environment:
       QUERY_SERVICE_URL: http://query-service:8082
       JJWT_SECRET: QueryHubSuperSecretKeyForJWTTokenGeneration2024Phase1
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
     depends_on:
       - query-service
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: queryhub-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   gateway-service:
     build:

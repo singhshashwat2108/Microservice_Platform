@@ -17,10 +17,13 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final QueryRepository queryRepository;
+    private final CacheInvalidationService cacheInvalidationService;
 
-    public CommentService(CommentRepository commentRepository, QueryRepository queryRepository) {
+    public CommentService(CommentRepository commentRepository, QueryRepository queryRepository,
+                          CacheInvalidationService cacheInvalidationService) {
         this.commentRepository = commentRepository;
         this.queryRepository = queryRepository;
+        this.cacheInvalidationService = cacheInvalidationService;
     }
 
     @Transactional
@@ -36,6 +39,7 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+        cacheInvalidationService.invalidate(query.getId(), query.getCategory().getName());
         return toResponse(comment);
     }
 
@@ -53,25 +57,15 @@ public class CommentService {
         CommentEntity comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment with id " + commentId + " not found."));
 
-        if ("ADMIN".equals(role)) {
-            commentRepository.delete(comment);
-            return;
-        }
-
-        if (comment.getUserId().equals(currentUserId)) {
-            commentRepository.delete(comment);
-            return;
-        }
-
         QueryEntity query = queryRepository.findById(comment.getQueryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Query with id " + comment.getQueryId() + " not found."));
 
-        if (query.getAuthorId().equals(currentUserId)) {
-            commentRepository.delete(comment);
-            return;
+        if (!"ADMIN".equals(role) && !comment.getUserId().equals(currentUserId) && !query.getAuthorId().equals(currentUserId)) {
+            throw new SecurityException("You are not authorized to delete this comment.");
         }
 
-        throw new SecurityException("You are not authorized to delete this comment.");
+        commentRepository.delete(comment);
+        cacheInvalidationService.invalidate(comment.getQueryId(), query.getCategory().getName());
     }
 
     private CommentDto.CommentResponse toResponse(CommentEntity comment) {
