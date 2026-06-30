@@ -20,6 +20,8 @@ class ViewServiceTest {
 
     @Mock
     private QueryServiceClient queryServiceClient;
+    @Mock
+    private CacheService cacheService;
 
     @InjectMocks
     private ViewService viewService;

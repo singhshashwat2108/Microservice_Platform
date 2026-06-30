@@ -1,15 +1,19 @@
 package com.queryhub.query.service;
 
+import com.queryhub.common.events.CommentAddedEvent;
 import com.queryhub.common.handler.ResourceNotFoundException;
 import com.queryhub.query.dto.CommentDto;
 import com.queryhub.query.entity.CommentEntity;
 import com.queryhub.query.entity.QueryEntity;
+import com.queryhub.query.kafka.KafkaEventPublisher;
 import com.queryhub.query.repository.CommentRepository;
 import com.queryhub.query.repository.QueryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,12 +22,15 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final QueryRepository queryRepository;
     private final CacheInvalidationService cacheInvalidationService;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     public CommentService(CommentRepository commentRepository, QueryRepository queryRepository,
-                          CacheInvalidationService cacheInvalidationService) {
+                          CacheInvalidationService cacheInvalidationService,
+                          KafkaEventPublisher kafkaEventPublisher) {
         this.commentRepository = commentRepository;
         this.queryRepository = queryRepository;
         this.cacheInvalidationService = cacheInvalidationService;
+        this.kafkaEventPublisher = kafkaEventPublisher;
     }
 
     @Transactional
@@ -40,6 +47,18 @@ public class CommentService {
 
         commentRepository.save(comment);
         cacheInvalidationService.invalidate(query.getId(), query.getCategory().getName());
+
+        // Publish Kafka event after DB commit
+        CommentAddedEvent event = CommentAddedEvent.builder()
+                .eventId(UUID.randomUUID())
+                .queryId(query.getId())
+                .categoryName(query.getCategory().getName())
+                .commentId(comment.getId())
+                .username(userName)
+                .createdAt(LocalDateTime.now())
+                .build();
+        kafkaEventPublisher.publishCommentAdded(event);
+
         return toResponse(comment);
     }
 

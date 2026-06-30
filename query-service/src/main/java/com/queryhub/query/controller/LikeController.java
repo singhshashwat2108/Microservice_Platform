@@ -27,7 +27,7 @@ public class LikeController {
     public ResponseEntity<Map<String, String>> addLike(
             @PathVariable Long queryId,
             @AuthenticationPrincipal JwtPrincipal principal) {
-        likeService.addLike(queryId, principal.getUserId());
+        likeService.addLike(queryId, principal.getUserId(), principal.getUsername());
         return ResponseEntity.ok(Map.of("message", "Like added successfully."));
     }
 

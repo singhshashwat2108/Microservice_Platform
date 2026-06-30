@@ -28,6 +28,10 @@ class QueryServiceTest {
     private com.queryhub.query.repository.CommentRepository commentRepository;
     @Mock
     private com.queryhub.query.repository.LikeRepository likeRepository;
+    @Mock
+    private CacheInvalidationService cacheInvalidationService;
+    @Mock
+    private com.queryhub.query.kafka.KafkaEventPublisher kafkaEventPublisher;
 
     @InjectMocks
     private QueryService queryService;

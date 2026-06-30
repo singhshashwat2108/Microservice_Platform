@@ -1,10 +1,12 @@
 package com.queryhub.query.service;
 
+import com.queryhub.common.events.QueryCreatedEvent;
 import com.queryhub.common.handler.ResourceNotFoundException;
 import com.queryhub.query.dto.CommentDto;
 import com.queryhub.query.dto.QueryDto;
 import com.queryhub.query.entity.Category;
 import com.queryhub.query.entity.QueryEntity;
+import com.queryhub.query.kafka.KafkaEventPublisher;
 import com.queryhub.query.repository.CommentRepository;
 import com.queryhub.query.repository.LikeRepository;
 import com.queryhub.query.repository.QueryRepository;
@@ -17,7 +19,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,15 +36,18 @@ public class QueryService {
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
     private final CacheInvalidationService cacheInvalidationService;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     public QueryService(QueryRepository queryRepository, CategoryService categoryService,
                         CommentRepository commentRepository, LikeRepository likeRepository,
-                        CacheInvalidationService cacheInvalidationService) {
+                        CacheInvalidationService cacheInvalidationService,
+                        KafkaEventPublisher kafkaEventPublisher) {
         this.queryRepository = queryRepository;
         this.categoryService = categoryService;
         this.commentRepository = commentRepository;
         this.likeRepository = likeRepository;
         this.cacheInvalidationService = cacheInvalidationService;
+        this.kafkaEventPublisher = kafkaEventPublisher;
     }
 
     public QueryDto.QueryResponse createQuery(QueryDto.QueryRequest request, Long authorId, String authorName) {
@@ -59,6 +66,18 @@ public class QueryService {
         queryRepository.save(query);
         log.info("Query created: id={}, authorId={}", query.getId(), authorId);
         cacheInvalidationService.invalidate(query.getId(), query.getCategory().getName());
+
+        // Publish Kafka event after DB commit
+        QueryCreatedEvent event = QueryCreatedEvent.builder()
+                .eventId(UUID.randomUUID())
+                .queryId(query.getId())
+                .categoryName(query.getCategory().getName())
+                .queryTitle(query.getTitle())
+                .username(authorName)
+                .createdAt(LocalDateTime.now())
+                .build();
+        kafkaEventPublisher.publishQueryCreated(event);
+
         return toResponse(query);
     }
 
