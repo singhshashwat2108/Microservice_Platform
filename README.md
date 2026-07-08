@@ -1,5 +1,5 @@
 # QueryHub
-![Java](https://img.shields.io/badge/Java-17-orange) ![Spring Boot](https://img.shields.io/badge/SpringBoot-3.0-brightgreen) ![Kafka](https://img.shields.io/badge/Kafka-EventDriven-black) ![Redis](https://img.shields.io/badge/Redis-Cache-red) ![Docker](https://img.shields.io/badge/Docker-Compose-blue) ![License](https://img.shields.io/badge/License-MIT-green)
+![Java](https://img.shields.io/badge/Java-17-orange)  ![Spring Boot](https://img.shields.io/badge/SpringBoot-3.0-brightgreen)  ![Kafka](https://img.shields.io/badge/Kafka-EventDriven-black)  ![Redis](https://img.shields.io/badge/Redis-Cache-red)  ![Docker](https://img.shields.io/badge/Docker-Compose-blue) 
 
 A production-inspired discussion platform built with Spring Boot microservices to demonstrate scalable backend architecture, event-driven communication, distributed caching, and modern service-oriented design.
 
@@ -217,33 +217,17 @@ Redis implements the Cache-Aside pattern:
   
 ## Event Flow
 
-Query Created
+```mermaid
+flowchart LR
 
-↓
+    A[Query Service] -->|Publishes Event| B[(Kafka Topic)]
+    B -->|Consumes Event| C[Notification Service]
+    C --> D[(Notification Database)]
 
-Query Service
-
-↓
-
-Kafka Topic
-
-↓
-
-Notification Service
-
-↓
-
-Notification Database
-
-↓
-
-Future:
-
-Email
-
-Push Notification
-
-SMS
+    C -. Future .-> E[Email Service]
+    C -. Future .-> F[Push Notification Service]
+    C -. Future .-> G[SMS Service]
+```
 
 ## Event-Driven Notifications
 
