@@ -97,8 +97,7 @@ Benefits include:
 - Better scalability
 - Fault isolation
 - Technology flexibility
-  
->>>>>>> e33e957780d05b1c4fdfd6672ef336318f3d70ed
+   
 ## Features
 
 - User Registration & Login (JWT Authentication)
