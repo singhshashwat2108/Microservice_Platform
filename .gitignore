@@ -37,3 +37,4 @@ build/
 
 ###Application.properties###
 **/application.properties
+*.log
