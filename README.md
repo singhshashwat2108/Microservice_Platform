@@ -1,6 +1,8 @@
-# QueryHub Microservices
+# QueryHub
 
-A Spring Boot microservices-based discussion platform demonstrating modern backend architecture using API Gateway, Redis, Kafka, Docker, and independent databases.
+A scalable discussion platform built using Spring Boot microservices to demonstrate modern backend architecture, event-driven communication, distributed caching, and API gateway design.
+
+> Built as a production-oriented backend system following database-per-service architecture, asynchronous messaging, and cache-aside patterns.
 
 ## Architecture
 
@@ -23,7 +25,17 @@ A Spring Boot microservices-based discussion platform demonstrating modern backe
                      ▼
              Notification DB
 ```
+This project was designed to explore backend scalability concepts by decomposing the application into independently deployable services.
 
+Benefits include:
+
+- Independent deployment
+- Service isolation
+- Database-per-service
+- Better scalability
+- Fault isolation
+- Technology flexibility
+  
 ## Features
 
 - User Registration & Login (JWT Authentication)
@@ -59,6 +71,42 @@ A Spring Boot microservices-based discussion platform demonstrating modern backe
 | Notification Service | Kafka consumer for notifications |
 | API Gateway | Single entry point for all APIs |
 
+## Redis Strategy
+
+The View Service follows the Cache-Aside pattern.
+
+Read Request
+
+↓
+
+Redis
+
+↓
+
+Cache Hit → Return
+
+↓
+
+Cache Miss
+
+↓
+
+Query Service
+
+↓
+
+Database
+
+↓
+
+Redis Update
+
+↓
+
+Client
+
+Cache invalidation occurs after every successful write operation.
+
 ## Running the Project
 
 ```bash
@@ -82,14 +130,35 @@ Services:
 - **Synchronous:** REST (Gateway ↔ Services, View Service → Query Service)
 - **Asynchronous:** Apache Kafka (Query Service → Notification Service)
 
-## Caching
+## Event Flow
 
-Redis implements the Cache-Aside pattern:
+Query Created
 
-- Cache lookup on read
-- Database fallback on cache miss
-- TTL-based expiration
-- Cache invalidation after successful write operations
+↓
+
+Query Service
+
+↓
+
+Kafka Topic
+
+↓
+
+Notification Service
+
+↓
+
+Notification Database
+
+↓
+
+Future:
+
+Email
+
+Push Notification
+
+SMS
 
 ## Event-Driven Notifications
 
@@ -111,3 +180,13 @@ Notification Service consumes these events and persists notifications asynchrono
 - Dockerized Deployment
 - Read/Write Separation
 - Event-Driven Microservices
+
+## Future Improvements
+
+- Kubernetes deployment
+- CI/CD using GitHub Actions
+- Prometheus + Grafana monitoring
+- Distributed tracing
+- Circuit Breaker (Resilience4j)
+- Service Discovery (Eureka)
+- OpenTelemetry
