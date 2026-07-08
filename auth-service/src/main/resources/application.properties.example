@@ -1,0 +1,18 @@
+server.port=8081
+
+spring.application.name=auth-service
+
+spring.datasource.url=jdbc:mysql://localhost:3306/auth_db
+spring.datasource.username=example
+spring.datasource.password=example
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+jwt.secret=${JWT_SECRET:example}
+jwt.expiration.ms=example
+
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n

@@ -1,0 +1,15 @@
+server.port=8083
+
+spring.application.name=view-service
+
+query.service.url=${QUERY_SERVICE_URL:http://localhost:8082}
+
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+
+
+jwt.secret=${JWT_SECRET:example}
+jwt.expiration.ms=86400000
+
+spring.data.redis.host=${SPRING_DATA_REDIS_HOST:example}
+spring.data.redis.port=${SPRING_DATA_REDIS_PORT:example}
+cache.ttl=${CACHE_TTL:600}
