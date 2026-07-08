@@ -6,7 +6,7 @@ A scalable discussion platform built using Spring Boot microservices to demonstr
 
 ## Architecture
 
-<img width="1392" height="1052" alt="Queryboard_diagram" src="https://github.com/user-attachments/assets/7489dc5e-5aeb-4e4e-a58c-8e5d0b229fd3" />
+<img width="625" height="319" alt="Service level" src="https://github.com/user-attachments/assets/d25d5289-d61f-437f-8027-6979fa6b636e" />
 
 This project was designed to explore backend scalability concepts by decomposing the application into independently deployable services.
 
