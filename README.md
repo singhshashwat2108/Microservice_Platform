@@ -27,6 +27,65 @@ A scalable discussion platform built using Spring Boot microservices to demonstr
 ```
 This project was designed to explore backend scalability concepts by decomposing the application into independently deployable services.
 
+```mermaid
+erDiagram
+
+    USERS {
+        BIGINT id PK
+        VARCHAR username
+        VARCHAR email
+        VARCHAR password
+        ENUM role
+        DATETIME created_at
+    }
+
+    CATEGORIES {
+        BIGINT id PK
+        VARCHAR name
+    }
+
+    QUERIES {
+        BIGINT id PK
+        VARCHAR title
+        TEXT description
+        BIGINT category_id FK
+        BIGINT user_id
+        VARCHAR username
+        DATETIME created_at
+    }
+
+    COMMENTS {
+        BIGINT id PK
+        BIGINT query_id FK
+        BIGINT user_id
+        VARCHAR username
+        VARCHAR content
+        DATETIME created_at
+    }
+
+    LIKES {
+        BIGINT id PK
+        BIGINT query_id FK
+        BIGINT user_id
+        VARCHAR username
+        DATETIME created_at
+    }
+
+    NOTIFICATIONS {
+        BIGINT id PK
+        BIGINT query_id
+        VARCHAR actor_username
+        VARCHAR category_name
+        ENUM event_type
+        VARCHAR message
+        DATETIME created_at
+    }
+
+    CATEGORIES ||--o{ QUERIES : contains
+    QUERIES ||--o{ COMMENTS : has
+    QUERIES ||--o{ LIKES : has
+```
+
 Benefits include:
 
 - Independent deployment
