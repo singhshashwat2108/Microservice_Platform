@@ -1,8 +1,23 @@
 # QueryHub
+![Java](https://img.shields.io/badge/Java-17-orange)
 
-A scalable discussion platform built using Spring Boot microservices to demonstrate modern backend architecture, event-driven communication, distributed caching, and API gateway design.
+![Spring Boot](https://img.shields.io/badge/SpringBoot-3.0-brightgreen)
+
+![Kafka](https://img.shields.io/badge/Kafka-EventDriven-black)
+
+![Redis](https://img.shields.io/badge/Redis-Cache-red)
+
+![Docker](https://img.shields.io/badge/Docker-Compose-blue)
+
+![License](https://img.shields.io/badge/License-MIT-green)
+
+A production-inspired discussion platform built with Spring Boot microservices to demonstrate scalable backend architecture, event-driven communication, distributed caching, and modern service-oriented design.
 
 > Built as a production-oriented backend system following database-per-service architecture, asynchronous messaging, and cache-aside patterns.
+
+## Motivation
+
+QueryHub was built to explore how modern distributed backend systems are designed and deployed. The project focuses on microservice decomposition, asynchronous communication, distributed caching, and scalable service architecture while maintaining clear service boundaries through a database-per-service approach.
 
 ## Architecture
 
@@ -69,42 +84,38 @@ erDiagram
     QUERIES ||--o{ LIKES : has
 ```
 
-##request flow sequence
+## Request Flow Sequence
 
-User
-   │
-   ▼
-API Gateway
-   │
-   ▼
-Query Service
-   │
-   ▼
-MySQL
+```mermaid
+flowchart TD
 
-        │
-        ├── Publish Event
-        ▼
-      Kafka
-        ▼
-Notification Service
+A[Client] --> B[API Gateway]
 
-View Request
-     │
-     ▼
-Redis
-  │
-  ├── Cache Hit → Response
-  │
-  └── Cache Miss
-          ▼
-      Query Service
-          ▼
-        MySQL
-          ▼
-      Update Redis
+B --> C[Query Service]
+
+C --> D[(MySQL)]
+
+C --> E[Publish Event]
+
+E --> F[(Kafka)]
+
+F --> G[Notification Service]
+
+G --> H[(Notification DB)]
+
+I[View Request] --> J[(Redis)]
+
+J -->|Cache Hit| K[Response]
+
+J -->|Cache Miss| C
+
+C --> D
+
+C --> J
+
+J --> K
+```
       
-
 ## Design Decisions
 
 - Database-per-Service architecture to ensure loose coupling between services.
@@ -162,44 +173,32 @@ Benefits include:
 
 The View Service follows the Cache-Aside pattern.
 
-Read Request
+```mermaid
+flowchart TD
 
-↓
+A[Client Request]
 
-Redis
+A --> B[(Redis)]
 
-↓
+B -->|Hit| C[Return Cached Data]
 
-Cache Hit → Return
+B -->|Miss| D[Query Service]
 
-↓
+D --> E[(MySQL)]
 
-Cache Miss
+E --> F[Update Redis]
 
-↓
-
-Query Service
-
-↓
-
-Database
-
-↓
-
-Redis Update
-
-↓
-
-Client
+F --> G[Return Response]
+```
 
 Cache invalidation occurs after every successful write operation.
 
 ## Running the Project
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/singhshashwat2108/Microservice_Platform.git
 
-cd QueryHub_Microservices
+cd Microservice_Platform
 
 docker compose up --build
 ```
@@ -225,7 +224,7 @@ Redis implements the Cache-Aside pattern:
 - Database fallback on cache miss
 - TTL-based expiration
 - Cache invalidation after successful write operations
-=======
+  
 ## Event Flow
 
 Query Created
@@ -276,6 +275,18 @@ Notification Service consumes these events and persists notifications asynchrono
 - Dockerized Deployment
 - Read/Write Separation
 - Event-Driven Microservices
+
+## Built With
+
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- MySQL
+- Redis
+- Apache Kafka
+- Docker
+- JWT
+- Maven
  
 
 ## Future Improvements
