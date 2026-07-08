@@ -6,28 +6,8 @@ A scalable discussion platform built using Spring Boot microservices to demonstr
 
 ## Architecture
 
-```
-                 Client
-                    │
-             API Gateway (8080)
-      ┌─────────────┼─────────────┐
-      ▼             ▼             ▼
- Auth Service   Query Service   View Service
-      │              │              │
-   Auth DB       Query DB       Redis Cache
-                     │
-                     ▼
-                  Apache Kafka
-                     │
-                     ▼
-           Notification Service
-                     │
-                     ▼
-             Notification DB
-```
-<<<<<<< HEAD
+<img width="1392" height="1052" alt="Queryboard_diagram" src="https://github.com/user-attachments/assets/7489dc5e-5aeb-4e4e-a58c-8e5d0b229fd3" />
 
-=======
 This project was designed to explore backend scalability concepts by decomposing the application into independently deployable services.
 
 ```mermaid
@@ -89,6 +69,61 @@ erDiagram
     QUERIES ||--o{ LIKES : has
 ```
 
+##request flow sequence
+
+User
+   │
+   ▼
+API Gateway
+   │
+   ▼
+Query Service
+   │
+   ▼
+MySQL
+
+        │
+        ├── Publish Event
+        ▼
+      Kafka
+        ▼
+Notification Service
+
+View Request
+     │
+     ▼
+Redis
+  │
+  ├── Cache Hit → Response
+  │
+  └── Cache Miss
+          ▼
+      Query Service
+          ▼
+        MySQL
+          ▼
+      Update Redis
+      
+
+## Design Decisions
+
+- Database-per-Service architecture to ensure loose coupling between services.
+- API Gateway as the single entry point for routing and authentication.
+- Redis Cache-Aside pattern to reduce read latency and database load.
+- Apache Kafka for asynchronous notification processing and service decoupling.
+- Independent deployment of services using Docker Compose.
+- JWT-based authentication for stateless authorization.
+
+## Microservices
+
+| Service | Responsibility |
+|---------|----------------|
+| Auth Service | User authentication & JWT |
+| Query Service | Categories, Queries, Comments, Likes |
+| View Service | Read-only APIs with Redis caching |
+| Notification Service | Kafka consumer for notifications |
+| API Gateway | Single entry point for all APIs |
+
 Benefits include:
 
 - Independent deployment
@@ -123,18 +158,6 @@ Benefits include:
 - Docker & Docker Compose
 - Maven
 
-## Microservices
-
-| Service | Responsibility |
-|---------|----------------|
-| Auth Service | User authentication & JWT |
-| Query Service | Categories, Queries, Comments, Likes |
-| View Service | Read-only APIs with Redis caching |
-| Notification Service | Kafka consumer for notifications |
-| API Gateway | Single entry point for all APIs |
-
-<<<<<<< HEAD
-=======
 ## Redis Strategy
 
 The View Service follows the Cache-Aside pattern.
@@ -171,7 +194,6 @@ Client
 
 Cache invalidation occurs after every successful write operation.
 
->>>>>>> e33e957780d05b1c4fdfd6672ef336318f3d70ed
 ## Running the Project
 
 ```bash
@@ -194,8 +216,7 @@ Services:
 
 - **Synchronous:** REST (Gateway ↔ Services, View Service → Query Service)
 - **Asynchronous:** Apache Kafka (Query Service → Notification Service)
-
-<<<<<<< HEAD
+ 
 ## Caching
 
 Redis implements the Cache-Aside pattern:
@@ -234,7 +255,6 @@ Email
 Push Notification
 
 SMS
->>>>>>> e33e957780d05b1c4fdfd6672ef336318f3d70ed
 
 ## Event-Driven Notifications
 
@@ -256,8 +276,7 @@ Notification Service consumes these events and persists notifications asynchrono
 - Dockerized Deployment
 - Read/Write Separation
 - Event-Driven Microservices
-<<<<<<< HEAD
-=======
+ 
 
 ## Future Improvements
 
@@ -268,4 +287,3 @@ Notification Service consumes these events and persists notifications asynchrono
 - Circuit Breaker (Resilience4j)
 - Service Discovery (Eureka)
 - OpenTelemetry
->>>>>>> e33e957780d05b1c4fdfd6672ef336318f3d70ed
